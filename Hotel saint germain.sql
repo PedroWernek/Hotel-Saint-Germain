@@ -1,17 +1,17 @@
-HotelSaintGermain.sql
+DROP DATABASE HotelSaintGermain;
 CREATE DATABASE HotelSaintGermain;
 USE HotelSaintGermain;
 
-DROP TABLE Cliente; 
+
 CREATE TABLE Cliente(
-	IdCliente INT PRIMARY KEY AUTO_INCREMENT,
+	IdCliente INT PRIMARY KEY,
 	Nome VARCHAR(100) NOT NULL,
 	Sexo CHAR(1) NOT NULL,
 	DtaNasc DATETIME NOT NULL
 );
 
-DROP TABLE CienteBrasileiro;
-CREATE TABLE CienteBrasileiro(
+
+CREATE TABLE ClienteBrasileiro(
 	IdCliente INT PRIMARY KEY,
 	Cpf NUMERIC(11) UNIQUE,
 	Rg VARCHAR(12) NOT NULL, 
@@ -24,7 +24,6 @@ CREATE TABLE CienteBrasileiro(
 			REFERENCES Cliente(IdCliente) 
 ); 
 
-DROP TABLE ClienteEstrangeiro;
 CREATE TABLE ClienteEstrangeiro(
 	IdCliente INT PRIMARY KEY,
     Passaporte TEXT(8),
@@ -32,7 +31,6 @@ CREATE TABLE ClienteEstrangeiro(
 			REFERENCES Cliente(IdCliente)
 );
 
-DROP TABLE Telefone;
 CREATE TABLE Telefone(
     Numero VARCHAR(20) PRIMARY KEY,
     IdCliente INT,
@@ -40,39 +38,11 @@ CREATE TABLE Telefone(
 			REFERENCES Cliente(IdCliente)
 );
 
-DROP TABLE Gerente;
 CREATE TABLE Gerente(
 	MatriculaGerente INT PRIMARY KEY,
 	Nome TEXT(100) NOT NULL
 );
 
-DROP TABLE Aprovacao;
-CREATE TABLE Aprovacao(
-	NroReserva INT PRIMARY KEY,
-    MatriculaGerente INT NOT NULL,
-    DataHora DATETIME NOT NULL,
-    Aprovacao CHAR(1) NOT NULL,
-	FOREIGN KEY (MatriculaGerente)
-		REFERENCES Gerente(MatriculaGerente),
-	FOREIGN KEY (NroReserva)
-		REFERENCES Reserva(NroReserva)
-);
-
-DROP TABLE Reserva;
-CREATE TABLE Reserva(
-	IdReserva INT PRIMARY KEY,
-	NroReserva INT PRIMARY KEY,
-    IdCliente INT,
-    NroQuarto SMALLINT,
-    DataHora DATETIME, 			
-    Periodo NUMERIC,
-	FOREIGN KEY (IdCliente)
-		REFERENCES Cliente(IdCliente),
-	FOREIGN KEY (NroQuarto)
-		REFERENCES Quarto(NroQuarto)
-);
-
-DROP TABLE Quarto;
 CREATE TABLE Quarto(
 	NroQuarto INT PRIMARY KEY,
 	Andar NUMERIC NOT NULL,
@@ -81,87 +51,131 @@ CREATE TABLE Quarto(
 	VlrDiaria VARCHAR(100) NOT NULL
 );
 
-DROP TABLE Ocupacao;
+
+CREATE TABLE Reserva(
+	NroReserva INT,
+    IdCliente INT,
+    NroQuarto INT,
+    DataHora DATETIME, 			
+    PRIMARY KEY (NroReserva),
+	FOREIGN KEY (IdCliente)
+		REFERENCES Cliente(IdCliente),
+	FOREIGN KEY (NroQuarto)
+		REFERENCES Quarto(NroQuarto)
+);
+
+
 CREATE TABLE Ocupacao(
 	NroReserva INT PRIMARY KEY,
 	NroQuarto SMALLINT,
 	Entrada DATETIME NOT NULL,
 	Saida DATETIME NOT NULL,
 	FOREIGN KEY (NroReserva)
-		REFERENCES Quarto(NroQuarto)
+		REFERENCES Reserva(NroReserva)
 );
 
-DROP TABLE Restaurante;
+CREATE TABLE Aprovacao(
+	NroReserva INT,
+    MatriculaGerente INT NOT NULL,
+    DataHora DATETIME NOT NULL,
+    AprovacaoQuarto CHAR(9) NOT NULL,
+    PRIMARY KEY (NroReserva),
+	FOREIGN KEY (MatriculaGerente)
+		REFERENCES Gerente(MatriculaGerente),
+	FOREIGN KEY (NroReserva)
+		REFERENCES Reserva(NroReserva)
+);
+
+
 CREATE TABLE Restaurante(
 	IdRestaurante INT PRIMARY KEY,
     Prato TEXT,
     Preco DECIMAL
 );
 
-DROP TABLE OcupacaoRestaurante;
+
 CREATE TABLE OcupacaoRestaurante(
-	NroReserva INT PRIMARY KEY,
-	IdRestaurante INT PRIMARY KEY,
-	DataHora DATETIME PRIMARY KEY,
+	NroReserva INT,
+	IdRestaurante INT,
+	DataHora DATETIME,
 	Quantidade TINYINT,
+    PRIMARY KEY (NroReserva, IdRestaurante, DataHora),
 	FOREIGN KEY (NroReserva)
 		REFERENCES Reserva(NroReserva),
-	FOREIGN KEY (IdReserva)
+	FOREIGN KEY (IdRestaurante)
 		REFERENCES Restaurante(IdRestaurante)
 );
 
-DROP TABLE Frigobar;
+
 CREATE TABLE Frigobar(
 	IdFrigobar INT PRIMARY KEY,
     Item TEXT,
     Preco DECIMAL
 );
 
-DROP TABLE OcupacaoFrigobar;
+
 CREATE TABLE OcupacaoFrigobar(
-	NroReserva INT PRIMARY KEY,
-    IdFrigobar INT PRIMARY KEY,
-	DataHora DATETIME PRIMARY KEY,
+	NroReserva INT,
+    IdFrigobar INT,
+	DataHora DATETIME,
     Quantidade TINYINT,
+    PRIMARY KEY (NroReserva, IdFrigobar, DataHora),
 	FOREIGN KEY (NroReserva)
 		REFERENCES Reserva(NroReserva),
 	FOREIGN KEY (IdFrigobar)
 		REFERENCES Frigobar(IdFrigobar)
 );
 
-DROP TABLE OcupacaoMassagem;
-CREATE TABLE OcupacaoMassagem(
-	NroReserva INT PRIMARY KEY,
-	IdMassagem INT PRIMARY KEY,
-	DataHora DATETIME,
-	Produtos TEXT,
-	FOREIGN KEY (NroReserva)
-		REFERENCES Reverva(NroReserva),
-	FOREIGN KEY (IdMassagem)
-		REFERENCES Massagem(IdMassagem)
-);
-
-DROP TABLE Massagem;
 CREATE TABLE Massagem(
 	IdMassagem INT PRIMARY KEY,
     Tipo TEXT,
     Preco DECIMAL
 ); 
 
-DROP TABLE TipoPagamento;
+CREATE TABLE OcupacaoMassagem(
+	NroReserva INT,
+	IdMassagem INT,
+	DataHora DATETIME,
+	Produtos TEXT,
+    PRIMARY KEY (NroReserva, IdMassagem, Datahora),
+	FOREIGN KEY (NroReserva)
+		REFERENCES Reserva(NroReserva),
+	FOREIGN KEY (IdMassagem)
+		REFERENCES Massagem(IdMassagem)
+);
+
+
 CREATE TABLE TipoPagamento(
 	IdTipoPagamento INT PRIMARY KEY,
 	Descricao TEXT 
 );
 
-DROP TABLE PagamentoOcupacao;
+
 CREATE TABLE PagamentoOcupacao(
-	NroReserva INT PRIMARY KEY,
-	IdTipoPagamento INT PRIMARY KEY,
+	NroReserva INT,
+	IdTipoPagamento INT,
 	DataHora DATETIME,
 	ValorTotal DECIMAL,
+    PRIMARY KEY (NroReserva, IdTipoPagamento),
 	FOREIGN KEY (NroReserva)
 		REFERENCES Reserva(NroReserva)
 );
 
 
+DROP TABLE PagamentoOcupacao;
+DROP TABLE TipoPagamento;
+DROP TABLE OcupacaoMassagem;
+DROP TABLE Massagem;
+DROP TABLE OcupacaoRestaurante;
+DROP TABLE Restaurante;
+DROP TABLE OcupacaoFrigobar;
+DROP TABLE Frigobar;
+DROP TABLE Ocupacao;
+DROP TABLE Quarto;
+DROP TABLE Aprovacao;
+DROP TABLE Gerente;
+DROP TABLE Telefone;
+DROP TABLE ClienteEstrangeiro;
+DROP TABLE CienteBrasileiro;
+DROP TABLE Cliente; 
+DROP TABLE Reserva;
