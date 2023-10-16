@@ -77,10 +77,10 @@ INSERT INTO Aprovacao
 (NroReserva, MatriculaGerente, DataHora, AprovacaoQuarto)
 	VALUES
     (1, 101, '2023-11-05 14:00:00', 'Aprovado'),
-	(2, 102, '2023-11-06 12:30:00', 'Aprovado'),
+	(2, 102, '2023-11-06 12:30:00', 'Reprovado'),
 	(3, 103, '2023-11-07 15:15:00', 'Aprovado'),
 	(4, 104, '2023-11-08 17:45:00', 'Aprovado'),
-	(5, 105, '2023-11-09 10:20:00', 'Aprovado');
+	(5, 105, '2023-11-09 10:20:00', 'Reprovado');
 
 INSERT INTO Restaurante (IdRestaurante, Prato, Preco)
 VALUES
@@ -157,15 +157,20 @@ WHERE C.IdCliente = R.IdCliente
 ORDER BY Nome ASC;
 
 /*• Listar o nome e o cpf de todos os clientes brasileiros;*/
-SELECT C.Nome, C.CPF 
-FROM Cliente C
-WHERE  
+SELECT C.Nome, CB.CPF
+FROM Cliente C, ClienteBrasileiro CB
+WHERE C.IdCliente = B.IdCliente;
 
 /*• Listar o nome e o passaporte de todos os clientes estrangeiros;*/
-
+SELECT C.Nome, CE.Passaporte
+FROM Cliente C, ClienteEstrangeiro CE
+WHERE C.IdCliente = CE.IdCliente; 
 
 /*• Listar o número da reserva e o nome do gerente de todas as reservas aprovadas;*/
-
+SELECT A.NroReserva, G.Nome
+FROM Gerente G, Aprovacao A
+WHERE G.MatriculaGerente = A.MatriculaGerente AND A.AprovacaoQuarto LIKE 'Aprovado'
+ORDER BY NroReserva;
 
 /*• Listar o número da reserva, a descrição e o valor dos pratos consumidos por todas as ocupações;*/
 
