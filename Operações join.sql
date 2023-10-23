@@ -57,10 +57,10 @@ VALUES
 INSERT INTO Reserva 
 	(NroReserva, IdCliente, NroQuarto, DataHora)
 VALUES
-    (1, 1, 101, '2023-10-10 14:00:00'),
-    (2, 2, 102, '2023-10-15 12:00:00'),
-    (3, 3, 103, '2023-10-20 16:00:00'),
-    (4, 4, 104, '2023-10-25 18:00:00'),
+    (1, 1, 101, '2023-9-10 14:00:00'),
+    (2, 2, 102, '2023-8-15 12:00:00'),
+    (3, 3, 103, '2023-8-20 16:00:00'),
+    (4, 4, 104, '2023-5-25 18:00:00'),
     (5, 5, 105, '2023-10-30 10:00:00');
     
 
@@ -92,11 +92,11 @@ VALUES
 
 INSERT INTO OcupacaoRestaurante (NroReserva, IdRestaurante, DataHora, Quantidade)
 VALUES
-    (1, 1, '2023-10-10 19:30:00', 2),
-    (2, 2, '2023-10-15 20:00:00', 3),
-    (3, 3, '2023-10-20 19:00:00', 1),
-    (4, 4, '2023-10-25 21:15:00', 2),
-    (5, 5, '2023-10-30 18:30:00', 4);
+    (1, 1, '2023-5-10 19:30:00', 2),
+    (2, 2, '2023-8-15 20:00:00', 3),
+    (3, 3, '2023-7-20 19:00:00', 1),
+    (4, 4, '2023-8-25 21:15:00', 2),
+    (5, 5, '2023-6-30 18:30:00', 4);
 
 INSERT INTO Frigobar (IdFrigobar, Item, Preco)
 VALUES
@@ -125,10 +125,10 @@ VALUES
 INSERT INTO OcupacaoMassagem (NroReserva, IdMassagem, DataHora, Produtos)
 VALUES
     (1, 1, '2023-10-11 15:00:00', 'Óleo de Lavanda'),
-    (2, 2, '2023-10-16 14:30:00', 'Creme de Arnica'),
-    (3, 3, '2023-10-21 16:45:00', 'Óleo de Eucalipto'),
-    (4, 4, '2023-10-26 18:15:00', 'Creme de Camomila'),
-    (5, 5, '2023-10-31 10:30:00', 'Óleo de Rosa Mosqueta');
+    (2, 2, '2021-10-16 14:30:00', 'Creme de Arnica'),
+    (3, 3, '2020-10-21 16:45:00', 'Óleo de Eucalipto'),
+    (4, 4, '2022-10-26 18:15:00', 'Creme de Camomila'),
+    (5, 5, '2022-10-31 10:30:00', 'Óleo de Rosa Mosqueta');
 
 
 INSERT INTO TipoPagamento (IdTipoPagamento, Descricao)
@@ -159,7 +159,7 @@ ORDER BY Nome ASC;
 /*• Listar o nome e o cpf de todos os clientes brasileiros;*/
 SELECT C.Nome, CB.CPF
 FROM Cliente C, ClienteBrasileiro CB
-WHERE C.IdCliente = B.IdCliente;
+WHERE C.IdCliente = CB.IdCliente;
 
 /*• Listar o nome e o passaporte de todos os clientes estrangeiros;*/
 SELECT C.Nome, CE.Passaporte
@@ -173,19 +173,87 @@ WHERE G.MatriculaGerente = A.MatriculaGerente AND A.AprovacaoQuarto LIKE 'Aprova
 ORDER BY NroReserva;
 
 /*• Listar o número da reserva, a descrição e o valor dos pratos consumidos por todas as ocupações;*/
-
+SELECT R.NroReserva, Q.Descricao, Rest.Preco
+FROM  Quarto Q, Restaurante Rest
+INNER JOIN OcupacaoRestaurante OcR
+ON Rest.IdRestaurante = OcR.IdRestaurante
+INNER JOIN Reserva R
+ON OcR.NroReserva = R.NroReserva
+WHERE Q.NroQuarto = R.NroQuarto;
 
 /*• Listar o nome do cliente e o tipo de pagamento de todas as ocupações pagas;*/
+SELECT C.Nome, TP.Descricao
+FROM  Cliente C, tipopagamento TP
+INNER JOIN PagamentoOcupacao PO
+ON PO.idtipopagamento = TP.idtipopagamento
+INNER JOIN Reserva R  
+ON PO.NroReserva = R.NroReserva
+WHERE C.IdCliente = R.IdCliente;
 
-
-/*• Listar o nome do cliente e os produtos utilizados nas massagens dos clientes que ficaram hospedadosno último ano;*/
+/*• Listar o nome do cliente e os produtos utilizados nas massagens dos clientes que ficaram hospedados no último ano;*/
+SELECT C.Nome, OM.Produtos 
+FROM OcupacaoMassagem OM
+INNER JOIN Reserva R
+ON R.NroReserva = OM.NroReserva  
+INNER JOIN  Cliente C
+ON C.IdCliente = R.IdCliente
+WHERE year(OM.DataHora) = YEAR(CURDATE()) - 1; 
 
 
 /*• Listar o nome do cliente, a data de nascimento e o andar do quarto em que ficaram hospedados osclientes nos últimos três meses;*/
-
+SELECT C.Nome, C.DtaNasc, Q.Andar,R.DataHora
+FROM Quarto Q
+INNER JOIN Reserva R
+ON R.NroQuarto = Q.NroQuarto
+INNER JOIN Cliente C
+ON C.IdCliente = R.IdCliente
+WHERE MONTH(R.DataHora) >= MONTH(CURDATE()) - 3;
 
 /*• Listar o estado, o nome da cidade e o nome do cliente, para os clientes que se hospedaram nosúltimos cinco anos.*/
+SELECT CB.Estado, CB.Cidade, C.Nome, R.DataHora
+FROM Cliente C	
+INNER JOIN ClienteBrasileiro CB
+ON CB.IdCliente = C.IdCliente
+INNER JOIN Reserva R
+ON R.IdCliente = C.IdCliente
+WHERE YEAR(R.DataHora) >= YEAR(curdate()) - 5;   
 
 
 /*• Listar o nome do cliente, a data prevista para entrada (reservada), a data e saída da hospedagem(ocupação),
 o andar e o número do quarto de todos os clientes que se hospedaram no hotel no anocorrente.*/
+
+
+
+ /*Contar quantos clientes existem no hotel;• Listar os clientes do hotel, contando quantos telefones cada cliente possui;*/
+ 
+ 
+ 
+ /*• Listar o estado e o nome das cidades dos clientes do hotel, contando quantos clientes há em cadacidade;*/
+ 
+ 
+ 
+ /*• Listar quantos quartos existem no hotel, agrupando por andar;• Apresentar o valor médio das diárias dos quartos do hotel;*/
+ 
+ 
+ 
+ /*• Listar o valor médio das diárias dos quartos do hotel, agrupando por andar;• Listar o tipo de quarto e a quantidade de quartos de cada tipo;*/
+ 
+ 
+ 
+ /*• Listar o valor médio das diárias dos quartos do hotel, agrupando por tipo;• Contar quantas reservas foram feitas no último ano;*/
+ 
+ 
+ 
+ /*• Listar a data de entrada e a quantidade de ocupações no último ano, agrupado pela data de entrada;• Listar a data de saída e o valor total das ocupações, agrupado pela data de saída;*/
+ 
+ 
+ 
+ /*• Apresentar o valor médio dos pratos do restaurante;• Apresentar o valor total pago em ocupações no ano atual;• Listar o número da reserva e o valor total consumido em restaurante por cada reserva;*/
+ 
+ 
+ 
+ /*• Listar os pagamentos do último ano e o valor total pago, agrupados por tipo de pagamento;• Listar o tipo de pagamento e a quantidade de reservas pagas no mês atual, agrupando pelo tipo depagamento.*/
+ 
+ 
+ 
+ /*• Listar o menor valor pago em ocupações referentes ao mês passado;• Listar o maior valor pago em ocupações no ano corrente*/
